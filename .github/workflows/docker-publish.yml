@@ -1,0 +1,23 @@
+name : create and publish a docker image
+
+on:
+  push:
+      branches : ['release']
+
+env:
+  REGISTRY: ghrc.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id_token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
