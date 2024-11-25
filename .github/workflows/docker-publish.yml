@@ -40,12 +40,12 @@ jobs:
         token: ${{ secrets.PAT_TOKEN }}
     
     - name: Scan Docker image for vulnerabilities
-      uses: aquasecurity/trivy-action@0.28.0
+      uses: aquasecurity/trivy-action@v0.11.0
       with:
         image-ref: ghcr.io/${{ github.repository }}:latest
         format: table
         severity: HIGH,CRITICAL
-        args: --db-repository docker.io/aquasec/trivy-db
+        args: --db-repository public.ecr.aws/aquasecurity/trivy-db:2
 
 
 
