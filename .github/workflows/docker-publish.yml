@@ -29,13 +29,24 @@ jobs:
         push: false # On ne publie pas encore
         tags: ghcr.io/${{ github.repository }}:latest
 
-    # Étape 4 : Scan de vulnérabilités avec Trivy
+        # Étape pour ajouter un cache Trivy
+    - name: Cache Trivy database
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/trivy
+        key: cache-trivy-${{ runner.os }}-${{ github.run_id }}
+        restore-keys: |
+          cache-trivy-${{ runner.os }}-
+    
+    # Étape pour scanner l'image avec Trivy
     - name: Scan Docker image for vulnerabilities
-      uses: aquasecurity/trivy-action@0.28.0
+      uses: aquasecurity/trivy-action@v0.11.0
       with:
         image-ref: ghcr.io/${{ github.repository }}:latest
         format: table
-        severity: HIGH,CRITICAL # Filtre les vulnérabilités importantes
+        severity: HIGH,CRITICAL
+        cache-dir: ~/.cache/trivy
+
 
     # Étape 5 : Publication de l'image Docker (si le scan passe)
     - name: Push Docker image
