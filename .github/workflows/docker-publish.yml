@@ -43,9 +43,9 @@ jobs:
     
     # Étape pour scanner l'image avec Trivy
     - name: Scan Docker image for vulnerabilities
-      uses: trivy-db
+      uses: aquasecurity/trivy-db
       with:
-        image-ref: aquasec/${{ github.repository }}:2
+        image-ref: public.ecr.aws/${{ github.repository }}:2
         format: table
         severity: HIGH,CRITICAL
         cache-dir: ~/.cache/trivy
