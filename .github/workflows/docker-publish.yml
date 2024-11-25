@@ -1,4 +1,4 @@
-name: Build and Publish Docker Image
+name: Build, Scan, and Publish Docker Image
 
 on:
   push:
@@ -6,33 +6,41 @@ on:
       - main
 
 jobs:
-  build:
+  build-scan-publish:
     runs-on: ubuntu-latest
 
     steps:
+    # Étape 1 : Checkout du code source
     - name: Checkout code
       uses: actions/checkout@v3
 
+    # Étape 2 : Connexion au registre GitHub Container Registry (GHCR)
     - name: Log in to GitHub Container Registry
       uses: docker/login-action@v2
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.PAT_TOKEN }}
-      
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@0.28.0
-      with:
-        image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
-        format: 'table'
-        exit-code: '1'
-        ignore-unfixed: true
-        vuln-type: 'os,library'
-        severity: 'CRITICAL,HIGH'
+        password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push Docker image
+    # Étape 3 : Construction de l'image Docker
+    - name: Build Docker image
+      uses: docker/build-push-action@v4
+      with:
+        push: false # On ne publie pas encore
+        tags: ghcr.io/${{ github.repository }}:latest
+
+    # Étape 4 : Scan de vulnérabilités avec Trivy
+    - name: Scan Docker image for vulnerabilities
+      uses: aquasecurity/trivy-action@v0.11.0
+      with:
+        image-ref: ghcr.io/${{ github.repository }}:latest
+        format: table
+        severity: HIGH,CRITICAL # Filtre les vulnérabilités importantes
+
+    # Étape 5 : Publication de l'image Docker (si le scan passe)
+    - name: Push Docker image
+      if: success() # Ne publie que si le scan réussit
       uses: docker/build-push-action@v4
       with:
         push: true
         tags: ghcr.io/${{ github.repository }}:latest
-
