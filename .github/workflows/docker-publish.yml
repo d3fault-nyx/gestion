@@ -28,8 +28,6 @@ jobs:
       with:
         push: false # On ne publie pas encore
         tags: ghcr.io/${{ github.repository }}:latest
-    - name: Wait before Trivy scan
-      run: sleep 30
 
         # Étape pour ajouter un cache Trivy
     - name: Cache Trivy database
@@ -41,15 +39,14 @@ jobs:
           cache-trivy-${{ runner.os }}-
         token: ${{ secrets.PAT_TOKEN }}
     
-    # Étape pour scanner l'image avec Trivy
-    - name: Scan Docker image for vulnerabilities
-      uses: aquasecurity/trivy-db
+        - name: Scan Docker image for vulnerabilities
+      uses: aquasecurity/trivy-action@0.28.0
       with:
-        image-ref: public.ecr.aws/${{ github.repository }}:2
+        image-ref: ghcr.io/${{ github.repository }}:latest
         format: table
         severity: HIGH,CRITICAL
-        cache-dir: ~/.cache/trivy
-        token: ${{ secrets.PAT_TOKEN }}
+        args: --db-repository docker.io/aquasec/trivy-db
+
 
 
 
