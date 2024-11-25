@@ -30,7 +30,7 @@ jobs:
         tags: ghcr.io/${{ github.repository }}:latest
     - name: Wait before Trivy scan
       run: sleep 30
-      
+
         # Étape pour ajouter un cache Trivy
     - name: Cache Trivy database
       uses: actions/cache@v4
@@ -39,6 +39,7 @@ jobs:
         key: cache-trivy-${{ runner.os }}-${{ github.run_id }}
         restore-keys: |
           cache-trivy-${{ runner.os }}-
+        token: ${{ secrets.PAT_TOKEN }}
     
     # Étape pour scanner l'image avec Trivy
     - name: Scan Docker image for vulnerabilities
@@ -48,6 +49,8 @@ jobs:
         format: table
         severity: HIGH,CRITICAL
         cache-dir: ~/.cache/trivy
+        token: ${{ secrets.PAT_TOKEN }}
+
 
 
     # Étape 5 : Publication de l'image Docker (si le scan passe)
