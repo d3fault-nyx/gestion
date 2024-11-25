@@ -29,30 +29,31 @@ jobs:
         push: false # On ne publie pas encore
         tags: ghcr.io/${{ github.repository }}:latest
 
-        # Étape pour ajouter un cache Trivy
+    # Étape 4 : Installation de Trivy
+    - name: Setup Trivy
+      uses: aquasecurity/setup-trivy@v0.2.1
+
+    # Étape 5 : Cache de la base de données Trivy
     - name: Cache Trivy database
       uses: actions/cache@v4
       with:
         path: ~/.cache/trivy
-        key: cache-trivy-${{ runner.os }}-${{ github.run_id }}
+        key: cache-trivy-${{ runner.os }}
         restore-keys: |
-          cache-trivy-${{ runner.os }}-
-        token: ${{ secrets.PAT_TOKEN }}
-    
+          cache-trivy-
+
+    # Étape 6 : Analyse de l'image Docker pour les vulnérabilités
     - name: Scan Docker image for vulnerabilities
-      uses: aquasecurity/trivy-action@0.28.0
-      with:
-        image-ref: ghcr.io/${{ github.repository }}:latest
-        format: table
-        severity: HIGH,CRITICAL
-        args: --db-repository public.ecr.aws/aquasecurity/trivy-db:2
+      run: |
+        trivy image --exit-code 1 \
+          --format table \
+          --severity HIGH,CRITICAL \
+          --db-repository public.ecr.aws/aquasecurity/trivy-db:2 \
+          ghcr.io/${{ github.repository }}:latest
 
-
-
-
-    # Étape 5 : Publication de l'image Docker (si le scan passe)
+    # Étape 7 : Publication de l'image Docker (si le scan passe)
     - name: Push Docker image
-      if: success() # Ne publie que si le scan réussit
+      if: success()
       uses: docker/build-push-action@v4
       with:
         push: true
