@@ -28,7 +28,9 @@ jobs:
       with:
         push: false # On ne publie pas encore
         tags: ghcr.io/${{ github.repository }}:latest
-
+    - name: Wait before Trivy scan
+      run: sleep 30
+      
         # Étape pour ajouter un cache Trivy
     - name: Cache Trivy database
       uses: actions/cache@v4
